@@ -7,13 +7,20 @@ from .serializers import ListSerializer
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
 
-@api_view(['GET'])
+@api_view(['GET'],['POST'])
 def index(request):
-    return JsonResponse({'message': 'HELLO'}, status=200)
+    if request.method == 'POST':
+        subject = request.POST['subject']
+        cloud = Cloud.objects.get(subject = subject)
+        cloud.now_fund += cloud.per_fund
+        cloud.save()
+        return JsonResponse({'message': 'SUCCESS'}, status=200)
+    else:
+        return JsonResponse({'message': 'HELLO'}, status=200)
 
 @api_view(['POST'])
 def register_cloud(request): #등록
-    data = json.load(request.body)
+    data = json.load(request.body) #post요청받은 json 추출
     subject = data.get('subject',None)
     writer = data.get('writer',None)
     text = data.get('text',None)
@@ -21,7 +28,7 @@ def register_cloud(request): #등록
     end_day = data.get('end_day',None)
     per_fund = data.get('per_fund',None)
 
-    cloud = Cloud(
+    cloud = Cloud( 
         subject = subject,
         writer = writer,
         text = text,
@@ -34,15 +41,15 @@ def register_cloud(request): #등록
 
 @api_view(['POST'])
 def delete(request): #삭제
-    data = json.load(request.body) 
+    data = json.load(request.body) #post요청받은 json 추출
     subject = data.get('subject',None) #삭제할 게시물의 제목을 가져옴
     cloud = Cloud.objects.get(subject = subject)
     cloud.delete()
     return JsonResponse({'message': 'SUCCESS'}, status=200)
 
 @api_view(['POST'])
-def revice(request):
-    data = json.load(request.body)
+def revice(request): #수정
+    data = json.load(request.body) #post요청받은 json 추출
     before_sub = data.get('before_sub')
     subject = data.get('subject',None)
     writer = data.get('writer',None)
@@ -64,7 +71,7 @@ def revice(request):
 
 
 @api_view(['get'])
-def cloud_list(request):
+def cloud_list(request): #리스트 출력
     try:
         search = request.get['search']
         cloud_list = Cloud.objects.filter(name__icontains=search)
