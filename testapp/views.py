@@ -1,5 +1,5 @@
 from django.shortcuts import render
-from testapp.models import Cloud
+from .models import Cloud
 import json
 from django.views import View
 from django.http  import JsonResponse
